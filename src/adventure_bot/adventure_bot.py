@@ -1,4 +1,4 @@
-from lib.bot.bot import Bot
+from src.bot.bot import Bot
 
 class AdventureBot(Bot):
     def __init__(self):

@@ -1,4 +1,4 @@
-from adventure_bot.adventure_bot import AdventureBot
+from src.adventure_bot.adventure_bot import AdventureBot
 
 
 def main():
