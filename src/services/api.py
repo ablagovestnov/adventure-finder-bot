@@ -4,7 +4,9 @@ class Api():
     api_url = 'https://rolecon.ru'
     path = ''
     secondary_path = ''
+    http = False
     def __init__(self):
+        self.http = requests
         self.path = '/'.join([self.api_url, self.secondary_path])
 
     def create(self):
