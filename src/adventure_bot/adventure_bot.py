@@ -162,7 +162,6 @@ class AdventureBot(Bot):
 
 
     async def filter_apply(self, update: Update, context: CallbackContext.DEFAULT_TYPE) -> int:
-        """Store info provided by user and ask for the next category."""
         query = update.callback_query
         await query.answer()
         [prop, value] = str(query['data']).split('::')
