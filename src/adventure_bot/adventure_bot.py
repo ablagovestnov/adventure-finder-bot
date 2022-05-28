@@ -139,6 +139,15 @@ class AdventureBot(Bot):
             )
         return self.CHOOSING
 
+    async def unknown_command(self, update: Update, context: CallbackContext.DEFAULT_TYPE) -> int:
+        """Ask the user for info about the selected predefined choice."""
+        text = update.message.text
+
+        context.user_data["choice"] = text
+        await update.message.reply_text(
+            'Не понятно - воспользуйся лучше кнопками'
+        )
+        return self.CHOOSING
 
     async def filter_item_choice(self, update: Update, context: CallbackContext.DEFAULT_TYPE) -> int:
         if not(update.message.text) or not(self.FILTER_MESSAGES.get(update.message.text)):
@@ -198,8 +207,6 @@ class AdventureBot(Bot):
             f"До встречи! приятной игры!!",
             reply_markup=ReplyKeyboardRemove(),
         )
-
-        user_data.clear()
         return ConversationHandler.END
 
     async def help(self, update,  context: CallbackContext.DEFAULT_TYPE):
@@ -219,6 +226,10 @@ class AdventureBot(Bot):
                             ),
                             MessageHandler(
                                 filters.Regex("^(По системе|По жанру|По мастеру|По сеттингу)"), self.filter_item_choice
+                            ),
+
+                            MessageHandler(
+                                filters.TEXT & ~filters.COMMAND, self.unknown_command
                             ),
                             CallbackQueryHandler(self.filter_apply, pattern="^(system::|setting::|genre::|master::)"),
 
