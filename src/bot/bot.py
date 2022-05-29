@@ -5,7 +5,8 @@ Source: https://github.com/python-telegram-bot/python-telegram-bot/blob/master/e
 """
 
 import logging
-from telegram.ext import Updater, CommandHandler, MessageHandler, filters, Application, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters, Application, CallbackContext, \
+    PicklePersistence
 
 
 class Bot():
@@ -44,7 +45,8 @@ class Bot():
         # Make sure to set use_context=True to use the new context based callbacks
         # Post version 12 this will no longer be necessary
         # updater = Updater(self.TOKEN, use_context=True)
-        application = Application.builder().token(self.TOKEN).build()
+        persistence = PicklePersistence(filepath="conversationbot")
+        application = Application.builder().token(self.TOKEN).persistence(persistence).build()
 
         # Get the dispatcher to register handlers
         # dp = updater.dispatcher

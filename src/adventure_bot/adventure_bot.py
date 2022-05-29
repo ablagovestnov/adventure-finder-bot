@@ -65,9 +65,11 @@ class AdventureBot(Bot):
         ]
         markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
         await update.message.reply_text(
-            "Привет! Я Поисковик Приключений!"
-            "Я помогу тебе посмотреть, какие игры есть на этой неделе в клубе Локаций"
-            "Посмотрим? Выбери, что хочешь узнать",
+            """
+            Привет! Я Поисковик Приключений!
+            Я помогу тебе посмотреть, какие игры есть на этой неделе в клубе Локации. 
+            По дробнее по командам /about и /help
+            Посмотрим? Выбери, что хочешь узнать""",
             reply_markup=markup,
         )
         return self.CHOOSING
@@ -134,7 +136,7 @@ class AdventureBot(Bot):
                 ParseMode.HTML,
                 disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("Подробнее об игре...", callback_data='id::'+game.get('id'))],
+                    [InlineKeyboardButton("Подробнее об игре...", callback_data='id::'+str(game.get('id')))],
                 ])
             )
         return self.CHOOSING
@@ -180,7 +182,7 @@ class AdventureBot(Bot):
                 ParseMode.HTML,
                 disable_web_page_preview=True,
                 reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton("Подробнее об игре...", callback_data='id::'+game.get('id'))],
+                    [InlineKeyboardButton("Подробнее об игре...", callback_data='id::'+str(game.get('id')))],
                 ])
             )
         return self.CHOOSING
@@ -195,7 +197,7 @@ class AdventureBot(Bot):
             if img:
                 await query.message.reply_photo(
                     photo=game.get('img'),
-                    caption=game.get('description')[0:1024] + '...' if game.get('description') else ''
+                    caption=(game.get('title')+'\n'+game.get('description'))[0:1024] + '...' if game.get('description') else game.get('title')
                 )
             else:
                 await query.message.reply_text(
@@ -225,7 +227,7 @@ class AdventureBot(Bot):
 
     async def done(self, update: Update, context: CallbackContext.DEFAULT_TYPE) -> int:
         await update.message.reply_text(
-            f"До встречи! приятной игры!!",
+            f"До встречи! Приятной игры!",
             reply_markup=ReplyKeyboardRemove(),
         )
         return ConversationHandler.END
@@ -235,12 +237,25 @@ class AdventureBot(Bot):
         await update.message.reply_text(
             f"""
             Доступные команды бота: \n
-            /start - запуск/перезапуск бота
             /help - получение информации
             /about - описание бота
             /done - завершение работы
             """
         )
+        return self.CHOOSING
+    async def about(self, update,  context: CallbackContext.DEFAULT_TYPE):
+        await update.message.reply_text(
+            f"""
+            О Локации: \n
+            Локация - клуб настрольных ролевых игр (НРИ), созданный организатором фестиваля Ролекон Денисом Антоновым. Клуб предоставляет возможность любому заявить игру на сайте, найти себе игроков и провести игру в удобном помещении на Китай-Городе
+            Подробнее о клубе Локация - https://rolecon.ru/location \n
+            
+            О боте:
+            Бот, пусть и являясь на данный момент учебной программой, может показать данные с сайта локации о предстоящих играх. Бот предлагает возможность фильтрации игр по ведущему, по игровой системе, по жанру и сеттингу.
+            Для выполнения этой задачи - реализован парсер, обрабатывающий информацию с сайта клуба. Особым образом происходит обработка мероприятия "Выходные в Локации", которое содержит в себе множество игр
+            """
+        )
+        return self.CHOOSING
 
     def __init__(self):
         self.handlers += [
@@ -283,9 +298,12 @@ class AdventureBot(Bot):
                     },
                     'fallbacks': [
                         CommandHandler("help", self.help),
+                        CommandHandler("about", self.about),
                         CommandHandler("done", self.done),
                         MessageHandler(filters.Regex("^Done$"), self.done),
                     ],
+                    'name': "location_conversation",
+                    'persistent': True,
                 }
             ),
 
