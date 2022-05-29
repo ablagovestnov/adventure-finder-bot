@@ -63,7 +63,7 @@ class AdventureBot(Bot):
             ["Все игры"],
             ["По системе", "По жанру", "По сеттингу", "По мастеру"],
         ]
-        markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
+        markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
         await update.message.reply_text(
             "Привет! Я Поисковик Приключений!"
             "Я помогу тебе посмотреть, какие игры есть на этой неделе в клубе Локаций"
@@ -133,9 +133,9 @@ class AdventureBot(Bot):
                 self.get_html_card(game),
                 ParseMode.HTML,
                 disable_web_page_preview=True,
-                # reply_markup=InlineKeyboardMarkup([
-                #     [InlineKeyboardButton("Ссылка на игру", url=game.get('url'))],
-                # ])
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("Подробнее об игре...", callback_data='id::'+game.get('id'))],
+                ])
             )
         return self.CHOOSING
 
@@ -179,11 +179,32 @@ class AdventureBot(Bot):
                 self.get_html_card(game),
                 ParseMode.HTML,
                 disable_web_page_preview=True,
-                # reply_markup=InlineKeyboardMarkup([
-                #     [InlineKeyboardButton("Ссылка на игру", url=game.get('url'))],
-                # ])
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton("Подробнее об игре...", callback_data='id::'+game.get('id'))],
+                ])
             )
         return self.CHOOSING
+
+    async def show_game_description(self, update: Update, context: CallbackContext.DEFAULT_TYPE) -> int:
+        query = update.callback_query
+        await query.answer()
+        [prop, value] = str(query['data']).split('::')
+        game = list(filter(lambda g: g.get(prop) == value, self.locationService.games)).pop()
+        if game:
+            img = game.get('img')
+            if img:
+                await query.message.reply_photo(
+                    photo=game.get('img'),
+                    caption=game.get('description')[0:1024] + '...' if game.get('description') else ''
+                )
+            else:
+                await query.message.reply_text(
+                    game.get('description')[0:1024] + '...' if game.get('description') else '',
+                    ParseMode.HTML,
+                    disable_web_page_preview=True,
+                )
+        return self.CHOOSING
+
 
     async def received_information(self, update: Update, context: CallbackContext.DEFAULT_TYPE) -> int:
         """Store info provided by user and ask for the next category."""
@@ -211,7 +232,15 @@ class AdventureBot(Bot):
 
     async def help(self, update,  context: CallbackContext.DEFAULT_TYPE):
         """Send a message when the command /help is issued."""
-        await update.message.reply_text('Help!')
+        await update.message.reply_text(
+            f"""
+            Доступные команды бота: \n
+            /start - запуск/перезапуск бота
+            /help - получение информации
+            /about - описание бота
+            /done - завершение работы
+            """
+        )
 
     def __init__(self):
         self.handlers += [
@@ -232,7 +261,7 @@ class AdventureBot(Bot):
                                 filters.TEXT & ~filters.COMMAND, self.unknown_command
                             ),
                             CallbackQueryHandler(self.filter_apply, pattern="^(system::|setting::|genre::|master::)"),
-
+                            CallbackQueryHandler(self.show_game_description, pattern="^id::"),
                         ],
                         self.FILTER_CHOICE: [
                             CallbackQueryHandler(self.filter_apply, pattern="^(system::|setting::|genre::|master::)"),

@@ -34,7 +34,14 @@ class LocationService(Api):
             content = day.find_all('a', {'class': 'js-game-title'})
             for game in content:
                 games.append(
-                    self.enrich_single_game({'time': time_caption, 'type': 'weekend', 'url': 'https://rolecon.ru' + game.attrs['href']})
+                    self.enrich_single_game(
+                        {
+                            'time': time_caption,
+                            'type': 'weekend',
+                            'url': 'https://rolecon.ru' + game.attrs['href'],
+                            'id': str(game.attrs['href']).split('/')[-1]
+                        }
+                    )
                 )
         return games
 
