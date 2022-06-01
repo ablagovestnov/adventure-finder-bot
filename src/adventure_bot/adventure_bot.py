@@ -197,11 +197,11 @@ class AdventureBot(Bot):
             if img:
                 await query.message.reply_photo(
                     photo=game.get('img'),
-                    caption=(game.get('title')+'\n'+game.get('description'))[0:1024] + '...' if game.get('description') else game.get('title')
+                    caption=(game.get('title')+'\n'+game.get('description'))[0:800] + '...' if game.get('description') else game.get('title')
                 )
             else:
                 await query.message.reply_text(
-                    game.get('description')[0:1024] + '...' if game.get('description') else '',
+                    game.get('description')[0:800] + '...' if game.get('description') else '',
                     ParseMode.HTML,
                     disable_web_page_preview=True,
                 )
